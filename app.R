@@ -44,17 +44,47 @@ server <- function(input, output) {
     join_info <- reactive(read_csv(input$join_info$datapath))
     
     
-    
-    output$good <- renderTable({
+    main_effort <- reactive({
         req(input$user_info)
         req(input$join_info)
-        inner_join(user_info(), join_info())
+        
+        
+        base <- list()
+        
+        if("exact" %in% input$try){
+            
+            
+            base$good <- inner_join(user_info(), join_info() %>% mutate(match_type = "exact"))
+            base$not_yet <- anti_join(join_info(), user_info())
+            
+        }
+        if("id_exact&name_by_1" %in% input$try){
+            base$good <- bind_rows(base$good, 
+                                   stringdist_inner_join(a,
+                                                         b %>% 
+                                                             select(-id) %>%
+                                                             mutate(match_type = "id_exact&name_by_1"), 
+                                                         max_dist = 1, 
+                                                         method = "lv") %>%
+                                       select(-name.y) %>%
+                                       rename(name = name.x ) %>%
+                                       inner_join(b %>% rename(name_join = name), by = c("id" = "id", "score" = "score")) %>%
+                                       distinct()
+            )
+            base$not_yet <- anti_join(base$good, 
+                                      base$not_yet
+            ) 
+        }
+        
+        base
+    })
+    
+    output$good <- renderTable({
+        main_effort()$good
     })
     
     output$not_yet <- renderTable({
-        req(input$user_info)
-        req(input$join_info)
-        anti_join(join_info(), user_info())
+        main_effort()$not_yet
     })
 }
 
@@ -65,7 +95,23 @@ shinyApp(ui = ui, server = server)
 # a <- read_csv(file.choose())
 # b <- read_csv(file.choose())
 # 
-# left_join(a,b)
-# inner_join(a,b)
 # 
-# anti_join(b, a)
+# c <- inner_join(a,b)
+# 
+# d<- anti_join(b, a)
+# 
+# e <- bind_rows(c,
+#                stringdist_inner_join(a,b %>% select(-id), max_dist = 1, method = "lv") %>%
+#                    select(-name.y) %>%
+#                    rename(name = name.x ) %>%
+#                    inner_join(b %>% rename(name_join = name), by = c("id" = "id", "score" = "score")) %>%
+#                    distinct())
+#      
+#           
+# f <- anti_join(b, a) %>%
+#     mutate(name_join = name) %>% 
+#     select(-name) %>%
+#     anti_join(e)
+    
+               
+               
