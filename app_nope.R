@@ -71,9 +71,7 @@ server <- function(input, output) {
                                        inner_join(b %>% rename(name_join = name), by = c("id" = "id", "score" = "score")) %>%
                                        distinct()
             )
-            base$not_yet <- anti_join(base$good, 
-                                      base$not_yet
-            ) 
+          
         }
         
         base
@@ -92,26 +90,7 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
 
 
-# a <- read_csv(file.choose())
-# b <- read_csv(file.choose())
-# 
-# 
-# c <- inner_join(a,b)
-# 
-# d<- anti_join(b, a)
-# 
-# e <- bind_rows(c,
-#                stringdist_inner_join(a,b %>% select(-id), max_dist = 1, method = "lv") %>%
-#                    select(-name.y) %>%
-#                    rename(name = name.x ) %>%
-#                    inner_join(b %>% rename(name_join = name), by = c("id" = "id", "score" = "score")) %>%
-#                    distinct())
-#      
-#           
-# f <- anti_join(b, a) %>%
-#     mutate(name_join = name) %>% 
-#     select(-name) %>%
-#     anti_join(e)
+
     
                
                
